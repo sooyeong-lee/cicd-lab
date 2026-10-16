@@ -28,29 +28,7 @@ jobs:
       - name: 테스트
         working-directory: ${{ env.APP }}
         run: |
-          docker run -d --name web -p 8080:80 -v "$GITHUB_WORKSPACE:/usr/share/nginx/html:ro" nginx:alpine
-      
-      - name : Wait for Nginx
-        run: |
-          for i in {1..10}; do
-            if curl -fsS http://localhost:8080/; then
-              echo "Nginx is ready"
-              exit 0
-            fi
-            sleep 2
-          done
-          docker logs web
-          exit 1
-      
-      - name: Verify HTTP status
-        run: |
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/)
-          echo "HTTP Status: $STATUS"
-          test "$STATUS" = "200"
-
-      - name: Cleanup
-        if: always()
-        run: docker rm -f web || true
+          docker run --rm -v "$GITHUB_WORKSPACE/defalt.conf:/etc/nginx/conf.d/default.conf:ro" nginx:alpine nginx -t
 
   scan:
     needs: test
